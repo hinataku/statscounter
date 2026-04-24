@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "StatsCounterApp"
 include(":app")
+include(":shared")
