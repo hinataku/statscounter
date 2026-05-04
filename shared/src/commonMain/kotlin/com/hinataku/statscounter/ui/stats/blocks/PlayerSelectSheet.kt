@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -30,9 +31,10 @@ import com.hinataku.statscounter.data.Player
 @Composable
 internal fun PlayerSelectSheet(
   allPlayers: List<Player>,
-  alreadyAddedIds: Set<Long>,
   pendingNewPlayerName: String,
-  onSelectPlayer: (Player) -> Unit,
+  pendingSelectedPlayerIds: Set<Long>,
+  onTogglePlayerSelection: (Player) -> Unit,
+  onConfirmSelectedPlayers: () -> Unit,
   onChangePendingName: (String) -> Unit,
   onConfirmNewPlayer: () -> Unit,
   onDismiss: () -> Unit,
@@ -68,31 +70,35 @@ internal fun PlayerSelectSheet(
 
       LazyColumn {
         items(allPlayers, key = { it.id }) { player ->
-          val added = player.id in alreadyAddedIds
+          val selected = player.id in pendingSelectedPlayerIds
           Row(
             modifier = Modifier
               .fillMaxWidth()
-              .clickable(enabled = !added) { onSelectPlayer(player) }
+              .clickable { onTogglePlayerSelection(player) }
               .padding(vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
           ) {
+            Checkbox(
+              checked = selected,
+              onCheckedChange = { onTogglePlayerSelection(player) },
+            )
             Text(
               text = player.name,
               style = MaterialTheme.typography.bodyLarge,
               modifier = Modifier.weight(1f),
             )
-            if (added) {
-              Text(
-                text = "追加済",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.outline,
-              )
-            }
           }
           HorizontalDivider()
         }
       }
 
+      Spacer(modifier = Modifier.height(12.dp))
+      TextButton(
+        onClick = onConfirmSelectedPlayers,
+        modifier = Modifier.align(Alignment.End),
+      ) {
+        Text("完了")
+      }
       Spacer(modifier = Modifier.height(32.dp))
     }
   }

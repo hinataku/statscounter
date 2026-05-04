@@ -10,7 +10,10 @@ import com.hinataku.statscounter.ui.home.RankingCategory
 import com.hinataku.statscounter.ui.home.RankingEntry
 import com.hinataku.statscounter.ui.stats.PlayerStats
 import com.hinataku.statscounter.ui.stats.StatType
+import com.hinataku.statscounter.ui.stats.StatsTransferPayload
 import com.hinataku.statscounter.ui.stats.StatsUiState
+import com.hinataku.statscounter.ui.stats.buildStatsTransferJson
+import com.hinataku.statscounter.ui.stats.parseStatsTransferJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -58,7 +61,13 @@ class StatsCounterController(
   }
 
   fun openStats(gameId: Long) {
-    _statsUiState.value = GameRepository.getStats(gameId)
+    val stats = GameRepository.getStats(gameId)
+    _statsUiState.value = stats.copy(
+      isPlayerSelectVisible = stats.players.isEmpty(),
+      isShareOptionsVisible = false,
+      pendingSelectedPlayerIds = stats.players.map { it.id }.toSet(),
+      pendingPlayerStats = stats.players.associateBy { it.id },
+    )
     _screen.value = AppScreen.Stats(gameId)
   }
 
@@ -125,26 +134,118 @@ class StatsCounterController(
     _statsUiState.update { it.copy(deletingPlayerId = null) }
   }
 
+  fun onClickMenu() {
+    _homeUiState.update { it.copy(isSideMenuVisible = true) }
+  }
+
+  fun onDismissMenu() {
+    _homeUiState.update { it.copy(isSideMenuVisible = false) }
+  }
+
+  fun onClickExport() {
+    _homeUiState.update {
+      it.copy(
+        isSideMenuVisible = false,
+        isExportDialogVisible = true,
+        exportText = buildStatsTransferJson(
+          players = PlayerRepository.exportPlayers(),
+          games = GameRepository.exportGames(),
+          statsMap = GameRepository.exportStatsMap(),
+        ),
+      )
+    }
+  }
+
+  fun onDismissExport() {
+    _homeUiState.update { it.copy(isExportDialogVisible = false, exportText = "") }
+  }
+
+  fun onClickImport() {
+    _homeUiState.update {
+      it.copy(
+        isSideMenuVisible = false,
+        isImportDialogVisible = true,
+        importErrorText = null,
+      )
+    }
+  }
+
+  fun onDismissImport() {
+    _homeUiState.update {
+      it.copy(
+        isImportDialogVisible = false,
+        importText = "",
+        importErrorText = null,
+      )
+    }
+  }
+
+  fun onChangeImportText(text: String) {
+    _homeUiState.update { it.copy(importText = text, importErrorText = null) }
+  }
+
+  fun onConfirmImport() {
+    val payload = parseStatsTransferJson(_homeUiState.value.importText.trim()).getOrElse {
+      _homeUiState.update { state -> state.copy(importErrorText = "JSONの読み込みに失敗しました") }
+      return
+    }
+    importPayload(payload)
+  }
+
+  fun onClickShare() {
+    _statsUiState.update { it.copy(isShareOptionsVisible = true) }
+  }
+
+  fun onDismissShareOptions() {
+    _statsUiState.update { it.copy(isShareOptionsVisible = false) }
+  }
+
   fun onClickAddPlayer() {
-    _statsUiState.update { it.copy(isPlayerSelectVisible = true) }
+    _statsUiState.update {
+      it.copy(
+        isPlayerSelectVisible = true,
+        pendingSelectedPlayerIds = it.players.map { player -> player.id }.toSet(),
+        pendingPlayerStats = it.players.associateBy { player -> player.id },
+      )
+    }
   }
 
   fun onDismissPlayerSelect() {
-    _statsUiState.update { it.copy(isPlayerSelectVisible = false, pendingNewPlayerName = "") }
-  }
-
-  fun onSelectPlayer(player: Player) {
-    if (_statsUiState.value.players.any { it.id == player.id }) {
-      onDismissPlayerSelect()
-      return
-    }
-    updateStatsState { state ->
-      state.copy(
-        players = state.players + PlayerStats(id = player.id, name = player.name),
+    _statsUiState.update {
+      it.copy(
         isPlayerSelectVisible = false,
         pendingNewPlayerName = "",
+        pendingSelectedPlayerIds = emptySet(),
+        pendingPlayerStats = emptyMap(),
       )
     }
+  }
+
+  fun onTogglePlayerSelection(player: Player) {
+    val allPlayers = PlayerRepository.players.value
+    updateStatsState { state ->
+      val nextSelected = if (player.id in state.pendingSelectedPlayerIds) {
+        state.pendingSelectedPlayerIds - player.id
+      } else {
+        state.pendingSelectedPlayerIds + player.id
+      }
+      val nextDrafts = state.pendingPlayerStats.toMutableMap()
+      if (player.id !in nextDrafts) {
+        nextDrafts[player.id] = PlayerStats(id = player.id, name = player.name)
+      }
+      state.copy(
+        players = allPlayers.mapNotNull { candidate ->
+          if (candidate.id !in nextSelected) return@mapNotNull null
+          nextDrafts[candidate.id] ?: PlayerStats(id = candidate.id, name = candidate.name)
+        },
+        pendingSelectedPlayerIds = nextSelected,
+        pendingPlayerStats = nextDrafts,
+      )
+    }
+  }
+
+  fun onConfirmSelectedPlayers() {
+    onDismissPlayerSelect()
   }
 
   fun onChangePendingNewPlayerName(name: String) {
@@ -155,7 +256,37 @@ class StatsCounterController(
     val name = _statsUiState.value.pendingNewPlayerName.trim()
     if (name.isEmpty()) return
     val player = PlayerRepository.addPlayer(name)
-    onSelectPlayer(player)
+    val allPlayers = PlayerRepository.players.value
+    updateStatsState { state ->
+      val nextDrafts = state.pendingPlayerStats + (player.id to PlayerStats(id = player.id, name = player.name))
+      val nextSelected = state.pendingSelectedPlayerIds + player.id
+      state.copy(
+        players = allPlayers.mapNotNull { candidate ->
+          if (candidate.id !in nextSelected) return@mapNotNull null
+          nextDrafts[candidate.id] ?: PlayerStats(id = candidate.id, name = candidate.name)
+        },
+        pendingNewPlayerName = "",
+        pendingSelectedPlayerIds = nextSelected,
+        pendingPlayerStats = nextDrafts,
+      )
+    }
+  }
+
+  private fun importPayload(payload: StatsTransferPayload) {
+    PlayerRepository.replaceAll(payload.players)
+    GameRepository.replaceAll(
+      games = payload.games,
+      importedStatsMap = payload.statsMap.mapKeys { it.key.toLong() },
+    )
+    _screen.value = AppScreen.Home
+    _statsUiState.value = StatsUiState()
+    _homeUiState.update {
+      it.copy(
+        isImportDialogVisible = false,
+        importText = "",
+        importErrorText = null,
+      )
+    }
   }
 
   fun increment(id: Long, type: StatType) {

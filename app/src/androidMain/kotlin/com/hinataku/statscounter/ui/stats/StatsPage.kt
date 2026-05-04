@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.hinataku.statscounter.data.GameRepository
 import com.hinataku.statscounter.data.PlayerRepository
 import com.hinataku.statscounter.ui.navigation.LocalNavController
 
@@ -35,15 +36,28 @@ fun StatsPage(gameId: Long) {
   )
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val allPlayers by PlayerRepository.players.collectAsStateWithLifecycle()
+  val gameName = GameRepository.getGame(gameId)?.name ?: "タイトル"
 
   StatsTemplate(
+    title = gameName,
     uiState = uiState,
     allPlayers = allPlayers,
     onBack = { navController.popBackStack() },
     onClickAddPlayer = viewModel::onClickAddPlayer,
+    onClickShare = viewModel::onClickShare,
+    onDismissShareOptions = viewModel::onDismissShareOptions,
+    onShareImage = {
+      viewModel.onDismissShareOptions()
+      activity?.let { StatsShareManager.shareStatsImage(it, gameName, uiState) }
+    },
+    onSaveImage = {
+      viewModel.onDismissShareOptions()
+      activity?.let { StatsShareManager.saveStatsImage(it, gameName, uiState) }
+    },
     onDismissPlayerSelect = viewModel::onDismissPlayerSelect,
     onDismissDeleteDialog = viewModel::onDismissDeleteDialog,
-    onSelectPlayer = viewModel::onSelectPlayer,
+    onTogglePlayerSelection = viewModel::onTogglePlayerSelection,
+    onConfirmSelectedPlayers = viewModel::onConfirmSelectedPlayers,
     onChangePendingNewPlayerName = viewModel::onChangePendingNewPlayerName,
     onConfirmNewPlayer = viewModel::onConfirmNewPlayer,
     onLongPressPlayer = viewModel::onLongPressPlayer,

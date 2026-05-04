@@ -50,8 +50,29 @@ object GameRepository {
 
   fun getStats(gameId: Long): StatsUiState = statsMap[gameId] ?: StatsUiState()
 
+  fun getGame(gameId: Long): Game? = _games.value.firstOrNull { it.id == gameId }
+
+  fun exportGames(): List<Game> = _games.value
+
+  fun exportStatsMap(): Map<Long, StatsUiState> = statsMap.toMap()
+
+  fun renameGame(gameId: Long, name: String) {
+    _games.update { games ->
+      games.map { game -> if (game.id == gameId) game.copy(name = name) else game }
+    }
+    save()
+  }
+
   fun updateStats(gameId: Long, stats: StatsUiState) {
     statsMap[gameId] = stats
+    _statsVersion.update { it + 1 }
+    save()
+  }
+
+  fun replaceAll(games: List<Game>, importedStatsMap: Map<Long, StatsUiState>) {
+    _games.value = games
+    statsMap.clear()
+    statsMap.putAll(importedStatsMap)
     _statsVersion.update { it + 1 }
     save()
   }

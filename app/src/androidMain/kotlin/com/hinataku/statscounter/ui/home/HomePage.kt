@@ -28,6 +28,15 @@ fun HomePage(viewModel: HomeViewModel = viewModel()) {
   HomeTemplate(
     uiState = uiState,
     onClickAdd = viewModel::onClickAddButton,
+    onClickMenu = {},
+    onDismissMenu = {},
+    onClickExport = {},
+    onDismissExport = {},
+    onShareExportText = null,
+    onClickImport = {},
+    onDismissImport = {},
+    onChangeImportText = {},
+    onConfirmImport = {},
     onChangePendingName = viewModel::onChangePendingName,
     onConfirmAdd = {
       val gameId = viewModel.onConfirmAdd() ?: return@HomeTemplate

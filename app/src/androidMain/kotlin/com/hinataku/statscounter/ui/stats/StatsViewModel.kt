@@ -10,7 +10,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class StatsViewModel(private val gameId: Long) : ViewModel() {
-  private val _uiState = MutableStateFlow(GameRepository.getStats(gameId))
+  private val _uiState = MutableStateFlow(
+    GameRepository.getStats(gameId).let { stats ->
+      stats.copy(
+        isPlayerSelectVisible = stats.players.isEmpty(),
+        isShareOptionsVisible = false,
+        pendingSelectedPlayerIds = stats.players.map { it.id }.toSet(),
+        pendingPlayerStats = stats.players.associateBy { it.id },
+      )
+    }
+  )
   val uiState: StateFlow<StatsUiState> = _uiState.asStateFlow()
 
   private fun updateState(transform: (StatsUiState) -> StatsUiState) {
@@ -39,26 +48,60 @@ class StatsViewModel(private val gameId: Long) : ViewModel() {
     _uiState.update { it.copy(deletingPlayerId = null) }
   }
 
+  fun onClickShare() {
+    _uiState.update { it.copy(isShareOptionsVisible = true) }
+  }
+
+  fun onDismissShareOptions() {
+    _uiState.update { it.copy(isShareOptionsVisible = false) }
+  }
+
   fun onClickAddPlayer() {
-    _uiState.update { it.copy(isPlayerSelectVisible = true) }
+    _uiState.update {
+      it.copy(
+        isPlayerSelectVisible = true,
+        pendingSelectedPlayerIds = it.players.map { player -> player.id }.toSet(),
+        pendingPlayerStats = it.players.associateBy { player -> player.id },
+      )
+    }
   }
 
   fun onDismissPlayerSelect() {
-    _uiState.update { it.copy(isPlayerSelectVisible = false, pendingNewPlayerName = "") }
-  }
-
-  fun onSelectPlayer(player: Player) {
-    if (_uiState.value.players.any { it.id == player.id }) {
-      onDismissPlayerSelect()
-      return
-    }
-    updateState { state ->
-      state.copy(
-        players = state.players + PlayerStats(id = player.id, name = player.name),
+    _uiState.update {
+      it.copy(
         isPlayerSelectVisible = false,
         pendingNewPlayerName = "",
+        pendingSelectedPlayerIds = emptySet(),
+        pendingPlayerStats = emptyMap(),
       )
     }
+  }
+
+  fun onTogglePlayerSelection(player: Player) {
+    val allPlayers = PlayerRepository.players.value
+    updateState { state ->
+      val nextSelected = if (player.id in state.pendingSelectedPlayerIds) {
+        state.pendingSelectedPlayerIds - player.id
+      } else {
+        state.pendingSelectedPlayerIds + player.id
+      }
+      val nextDrafts = state.pendingPlayerStats.toMutableMap()
+      if (player.id !in nextDrafts) {
+        nextDrafts[player.id] = PlayerStats(id = player.id, name = player.name)
+      }
+      state.copy(
+        players = allPlayers.mapNotNull { candidate ->
+          if (candidate.id !in nextSelected) return@mapNotNull null
+          nextDrafts[candidate.id] ?: PlayerStats(id = candidate.id, name = candidate.name)
+        },
+        pendingSelectedPlayerIds = nextSelected,
+        pendingPlayerStats = nextDrafts,
+      )
+    }
+  }
+
+  fun onConfirmSelectedPlayers() {
+    onDismissPlayerSelect()
   }
 
   fun onChangePendingNewPlayerName(name: String) {
@@ -69,7 +112,20 @@ class StatsViewModel(private val gameId: Long) : ViewModel() {
     val name = _uiState.value.pendingNewPlayerName.trim()
     if (name.isEmpty()) return
     val player = PlayerRepository.addPlayer(name)
-    onSelectPlayer(player)
+    val allPlayers = PlayerRepository.players.value
+    updateState { state ->
+      val nextDrafts = state.pendingPlayerStats + (player.id to PlayerStats(id = player.id, name = player.name))
+      val nextSelected = state.pendingSelectedPlayerIds + player.id
+      state.copy(
+        players = allPlayers.mapNotNull { candidate ->
+          if (candidate.id !in nextSelected) return@mapNotNull null
+          nextDrafts[candidate.id] ?: PlayerStats(id = candidate.id, name = candidate.name)
+        },
+        pendingNewPlayerName = "",
+        pendingSelectedPlayerIds = nextSelected,
+        pendingPlayerStats = nextDrafts,
+      )
+    }
   }
 
   fun updateStat(id: Long, type: StatType, value: Int) {

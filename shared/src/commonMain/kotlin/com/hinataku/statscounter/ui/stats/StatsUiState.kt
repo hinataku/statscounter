@@ -7,7 +7,10 @@ import kotlinx.serialization.Transient
 data class StatsUiState(
   val players: List<PlayerStats> = emptyList(),
   @Transient val isPlayerSelectVisible: Boolean = false,
+  @Transient val isShareOptionsVisible: Boolean = false,
   @Transient val pendingNewPlayerName: String = "",
+  @Transient val pendingSelectedPlayerIds: Set<Long> = emptySet(),
+  @Transient val pendingPlayerStats: Map<Long, PlayerStats> = emptyMap(),
   @Transient val deletingPlayerId: Long? = null,
 )
 

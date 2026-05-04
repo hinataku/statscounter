@@ -28,6 +28,17 @@ object PlayerRepository {
     return player
   }
 
+  fun findPlayerByName(name: String): Player? = _players.value.firstOrNull { it.name == name }
+
+  fun getOrCreatePlayer(name: String): Player = findPlayerByName(name) ?: addPlayer(name)
+
+  fun exportPlayers(): List<Player> = _players.value
+
+  fun replaceAll(players: List<Player>) {
+    _players.value = players
+    save()
+  }
+
   private fun seedDefaults() {
     val names = listOf("おさむ", "みやた", "けいすけ", "ひなたく", "おおてき", "きりやま", "てふぁん", "はやっち")
     _players.value = names.mapIndexed { i, name -> Player(id = (i + 1).toLong(), name = name) }

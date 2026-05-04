@@ -11,6 +11,12 @@ data class HomeUiState(
   val playerSummaries: List<PlayerSummary> = emptyList(),
   val rankings: List<RankingCategory> = emptyList(),
   val deletingGameId: Long? = null,
+  val isSideMenuVisible: Boolean = false,
+  val isExportDialogVisible: Boolean = false,
+  val exportText: String = "",
+  val isImportDialogVisible: Boolean = false,
+  val importText: String = "",
+  val importErrorText: String? = null,
 )
 
 enum class HomeTab { Games, Players, Rankings }

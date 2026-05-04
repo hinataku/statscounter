@@ -1,14 +1,24 @@
 package com.hinataku.statscounter.ui.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -32,9 +42,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -49,6 +62,15 @@ import com.hinataku.statscounter.ui.home.blocks.RankingCategoryCard
 fun HomeTemplate(
   uiState: HomeUiState,
   onClickAdd: () -> Unit,
+  onClickMenu: () -> Unit,
+  onDismissMenu: () -> Unit,
+  onClickExport: () -> Unit,
+  onDismissExport: () -> Unit,
+  onShareExportText: ((String) -> Unit)?,
+  onClickImport: () -> Unit,
+  onDismissImport: () -> Unit,
+  onChangeImportText: (String) -> Unit,
+  onConfirmImport: () -> Unit,
   onChangePendingName: (String) -> Unit,
   onConfirmAdd: () -> Unit,
   onDismissDialog: () -> Unit,
@@ -58,49 +80,93 @@ fun HomeTemplate(
   onConfirmDeleteGame: () -> Unit,
   onSelectTab: (HomeTab) -> Unit,
 ) {
-  Scaffold(
-    topBar = {
-      TopAppBar(title = { Text("スタッツ記録") })
-    },
-    floatingActionButton = {
-      if (uiState.selectedTab == HomeTab.Games) {
-        FloatingActionButton(onClick = onClickAdd) {
-          Text("+")
+  val clipboardManager = LocalClipboardManager.current
+
+  Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+      topBar = {
+        TopAppBar(
+          title = { Text("スタッツ記録") },
+          actions = {
+            TextButton(onClick = onClickMenu) { Text("⋮") }
+          },
+        )
+      },
+      floatingActionButton = {
+        if (uiState.selectedTab == HomeTab.Games) {
+          FloatingActionButton(onClick = onClickAdd) {
+            Text("+")
+          }
+        }
+      },
+    ) { innerPadding ->
+      Column(
+        modifier = Modifier
+          .fillMaxSize()
+          .padding(innerPadding)
+      ) {
+        TabRow(selectedTabIndex = uiState.selectedTab.ordinal) {
+          Tab(
+            selected = uiState.selectedTab == HomeTab.Games,
+            onClick = { onSelectTab(HomeTab.Games) },
+            text = { Text("記録") },
+          )
+          Tab(
+            selected = uiState.selectedTab == HomeTab.Players,
+            onClick = { onSelectTab(HomeTab.Players) },
+            text = { Text("選手") },
+          )
+          Tab(
+            selected = uiState.selectedTab == HomeTab.Rankings,
+            onClick = { onSelectTab(HomeTab.Rankings) },
+            text = { Text("ランキング") },
+          )
+        }
+
+        when (uiState.selectedTab) {
+          HomeTab.Games -> GamesTab(
+            games = uiState.games,
+            onClickGame = onClickGame,
+            onLongPressGame = onLongPressGame,
+          )
+          HomeTab.Players -> PlayersTab(summaries = uiState.playerSummaries)
+          HomeTab.Rankings -> RankingsTab(rankings = uiState.rankings)
         }
       }
-    },
-  ) { innerPadding ->
-    Column(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(innerPadding)
-    ) {
-      TabRow(selectedTabIndex = uiState.selectedTab.ordinal) {
-        Tab(
-          selected = uiState.selectedTab == HomeTab.Games,
-          onClick = { onSelectTab(HomeTab.Games) },
-          text = { Text("記録") },
-        )
-        Tab(
-          selected = uiState.selectedTab == HomeTab.Players,
-          onClick = { onSelectTab(HomeTab.Players) },
-          text = { Text("選手") },
-        )
-        Tab(
-          selected = uiState.selectedTab == HomeTab.Rankings,
-          onClick = { onSelectTab(HomeTab.Rankings) },
-          text = { Text("ランキング") },
-        )
-      }
+    }
 
-      when (uiState.selectedTab) {
-        HomeTab.Games -> GamesTab(
-          games = uiState.games,
-          onClickGame = onClickGame,
-          onLongPressGame = onLongPressGame,
-        )
-        HomeTab.Players -> PlayersTab(summaries = uiState.playerSummaries)
-        HomeTab.Rankings -> RankingsTab(rankings = uiState.rankings)
+    AnimatedVisibility(
+      visible = uiState.isSideMenuVisible,
+      enter = fadeIn(),
+      exit = fadeOut(),
+    ) {
+      Box(
+        modifier = Modifier
+          .fillMaxSize()
+          .background(Color(0x66000000))
+          .clickable(onClick = onDismissMenu),
+      )
+    }
+
+    AnimatedVisibility(
+      visible = uiState.isSideMenuVisible,
+      enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
+      exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut(),
+      modifier = Modifier.align(Alignment.TopEnd),
+    ) {
+      androidx.compose.material3.Card(
+        modifier = Modifier
+          .fillMaxHeight()
+          .width(220.dp),
+      ) {
+        Column(modifier = Modifier.padding(top = 72.dp, start = 12.dp, end = 12.dp)) {
+          TextButton(onClick = onClickExport, modifier = Modifier.fillMaxWidth()) {
+            Text("エクスポート")
+          }
+          TextButton(onClick = onClickImport, modifier = Modifier.fillMaxWidth()) {
+            Text("インポート")
+          }
+        }
       }
     }
 
@@ -153,6 +219,68 @@ fun HomeTemplate(
         },
         dismissButton = {
           TextButton(onClick = onDismissDeleteGameDialog) { Text("キャンセル") }
+        },
+      )
+    }
+
+    if (uiState.isExportDialogVisible) {
+      AlertDialog(
+        onDismissRequest = onDismissExport,
+        title = { Text("エクスポート") },
+        text = {
+          Column {
+            Text("タップでJSONをコピー")
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(
+              modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.medium)
+                .background(Color.White)
+                .border(1.dp, Color(0xFFD1D5DB), MaterialTheme.shapes.medium)
+                .clickable {
+                  clipboardManager.setText(AnnotatedString(uiState.exportText))
+                }
+                .padding(12.dp),
+            ) {
+              Text(
+                text = uiState.exportText,
+                style = MaterialTheme.typography.bodySmall,
+              )
+            }
+          }
+        },
+        confirmButton = {
+          if (onShareExportText != null) {
+            TextButton(onClick = { onShareExportText(uiState.exportText) }) { Text("共有") }
+          }
+        },
+        dismissButton = {
+          TextButton(onClick = onDismissExport) { Text("閉じる") }
+        },
+      )
+    }
+
+    if (uiState.isImportDialogVisible) {
+      AlertDialog(
+        onDismissRequest = onDismissImport,
+        title = { Text("インポート") },
+        text = {
+          Column {
+            OutlinedTextField(
+              value = uiState.importText,
+              onValueChange = onChangeImportText,
+              minLines = 12,
+              supportingText = {
+                uiState.importErrorText?.let { Text(it, color = Color(0xFFB91C1C)) }
+              },
+            )
+          }
+        },
+        confirmButton = {
+          TextButton(onClick = onConfirmImport) { Text("反映") }
+        },
+        dismissButton = {
+          TextButton(onClick = onDismissImport) { Text("閉じる") }
         },
       )
     }

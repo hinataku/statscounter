@@ -10,6 +10,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.hinataku.statscounter.ui.stats.PlayerStats
 import com.hinataku.statscounter.ui.stats.StatType
 
@@ -40,12 +42,13 @@ internal fun PlayerRow(
     NameCell(name = player.name, onLongPress = onLongPressName)
     NumberCell(player.twoPointMade, StatType.TwoPoint, onPlus, onMinus)
     NumberCell(player.threePointMade, StatType.ThreePoint, onPlus, onMinus)
-    ReadOnlyCell(text = player.points.toString())
+    ReadOnlyCell(text = player.points.toString(), fontSize = 16.sp)
     NumberCell(player.assist, StatType.Assist, onPlus, onMinus)
     NumberCell(player.rebound, StatType.Rebound, onPlus, onMinus)
     NumberCell(player.block, StatType.Block, onPlus, onMinus)
     NumberCell(player.steal, StatType.Steal, onPlus, onMinus)
     NumberCell(player.turnover, StatType.Turnover, onPlus, onMinus)
+    Spacer(modifier = Modifier.width(120.dp))
   }
 }
 
@@ -112,14 +115,14 @@ private fun NumberCell(
     Text(
       text = value.toString(),
       modifier = Modifier.align(Alignment.Center),
-      style = MaterialTheme.typography.bodyLarge,
       fontWeight = FontWeight.Bold,
+      fontSize = 28.sp,
     )
   }
 }
 
 @Composable
-private fun ReadOnlyCell(text: String) {
+private fun ReadOnlyCell(text: String, fontSize: androidx.compose.ui.unit.TextUnit) {
   Box(
     modifier = Modifier
       .width(64.dp)
@@ -128,6 +131,11 @@ private fun ReadOnlyCell(text: String) {
       .border(BorderStroke(0.5.dp, Color(0xFFD1D5DB))),
     contentAlignment = Alignment.Center,
   ) {
-    Text(text = text, fontWeight = FontWeight.Bold, color = Color(0xFFEA580C))
+    Text(
+      text = text,
+      fontWeight = FontWeight.Bold,
+      color = Color(0xFFEA580C),
+      fontSize = fontSize,
+    )
   }
 }

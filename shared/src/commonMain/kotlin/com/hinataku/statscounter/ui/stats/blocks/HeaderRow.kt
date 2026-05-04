@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +30,7 @@ internal fun HeaderRow() {
     HeaderCell("BLK", 92.dp)
     HeaderCell("STL", 92.dp)
     HeaderCell("TO", 92.dp)
+    Spacer(modifier = Modifier.width(120.dp))
   }
 }
 
