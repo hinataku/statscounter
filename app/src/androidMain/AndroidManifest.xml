@@ -7,8 +7,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.StatsCounter">
+        <!-- configChanges: orientation|screenSize は AppNavigationEffect が requestedOrientation を
+             切り替える際のアクティビティ再起動を抑制するための回避策。
+             requestedOrientation を廃止する際は orientation|screenSize も同時に除去すること。 -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

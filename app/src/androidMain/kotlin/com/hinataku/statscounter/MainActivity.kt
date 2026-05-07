@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.hinataku.statscounter.StatsCounterRoot
+import com.hinataku.statscounter.ui.navigation.AppNavigation
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,7 +14,9 @@ class MainActivity : ComponentActivity() {
     WindowCompat.setDecorFitsSystemWindows(window, false)
     hideSystemBars()
     setContent {
-      StatsCounterRoot()
+      App {
+        AppNavigation()
+      }
     }
   }
 
