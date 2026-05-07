@@ -8,6 +8,9 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -234,13 +237,15 @@ fun HomeTemplate(
             Box(
               modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(max = 240.dp)
                 .clip(MaterialTheme.shapes.medium)
                 .background(Color.White)
                 .border(1.dp, Color(0xFFD1D5DB), MaterialTheme.shapes.medium)
                 .clickable {
                   clipboardManager.setText(AnnotatedString(uiState.exportText))
                 }
-                .padding(12.dp),
+                .padding(12.dp)
+                .verticalScroll(rememberScrollState()),
             ) {
               Text(
                 text = uiState.exportText,

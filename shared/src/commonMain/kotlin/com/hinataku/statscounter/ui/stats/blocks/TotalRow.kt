@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Spacer
@@ -21,7 +22,7 @@ import com.hinataku.statscounter.ui.stats.PlayerStats
 
 @Composable
 internal fun TotalRow(players: List<PlayerStats>) {
-  Row(verticalAlignment = Alignment.CenterVertically) {
+  Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
     TotalCell("合計", 92.dp, fontSize = 16.sp)
     TotalCell(players.sumOf { it.twoPointMade }.toString(), 92.dp, fontSize = 16.sp)
     TotalCell(players.sumOf { it.threePointMade }.toString(), 92.dp, fontSize = 16.sp)
@@ -31,7 +32,7 @@ internal fun TotalRow(players: List<PlayerStats>) {
     TotalCell(players.sumOf { it.block }.toString(), 92.dp, fontSize = 16.sp)
     TotalCell(players.sumOf { it.steal }.toString(), 92.dp, fontSize = 16.sp)
     TotalCell(players.sumOf { it.turnover }.toString(), 92.dp, fontSize = 16.sp)
-    Spacer(modifier = Modifier.width(120.dp))
+    Spacer(modifier = Modifier.weight(1f).height(52.dp))
   }
 }
 

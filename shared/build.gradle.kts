@@ -34,6 +34,7 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.ui)
             implementation(compose.material3)
+            implementation(compose.components.uiToolingPreview)
             implementation(libs.kotlinx.serialization.json)
         }
 
@@ -41,6 +42,10 @@ kotlin {
             implementation(libs.activity.compose)
         }
     }
+}
+
+dependencies {
+    debugImplementation(libs.compose.ui.tooling)
 }
 
 android {

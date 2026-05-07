@@ -1,9 +1,10 @@
 package com.hinataku.statscounter.ui.stats
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.hinataku.statscounter.data.Player
+import com.hinataku.statscounter.ui.preview.PreviewPhone
+import com.hinataku.statscounter.ui.preview.PreviewTablet
 import com.hinataku.statscounter.ui.stats.blocks.HeaderRow
 import com.hinataku.statscounter.ui.stats.blocks.PlayerRow
 import com.hinataku.statscounter.ui.stats.blocks.PlayerSelectSheet
@@ -82,22 +85,29 @@ fun StatsTemplate(
         .padding(innerPadding)
     ) {
       Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().weight(1f),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
       ) {
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(horizontalScroll)
-            .padding(8.dp)
-        ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+          val tableWidth = 800.dp
+          val needsScroll = maxWidth < tableWidth
           Column(
-            modifier = Modifier.width(920.dp)
+            modifier = Modifier
+              .fillMaxHeight()
+              .then(
+                  if (needsScroll) {
+                      Modifier.width(tableWidth).horizontalScroll(horizontalScroll)
+                  } else {
+                      Modifier.fillMaxWidth()
+                  }
+              )
           ) {
             HeaderRow()
             Column(
-              modifier = Modifier.verticalScroll(verticalScroll)
+              modifier = Modifier
+                .weight(1f)
+                .verticalScroll(verticalScroll)
             ) {
               uiState.players.forEach { player ->
                 PlayerRow(
@@ -110,7 +120,7 @@ fun StatsTemplate(
               TotalRow(players = uiState.players)
             }
           }
-        } 
+        }
       }
     }
   }
@@ -156,4 +166,36 @@ fun StatsTemplate(
       },
     )
   }
+}
+
+@PreviewPhone
+@PreviewTablet
+@Composable
+internal fun StatsTemplatePreviewContent() {
+  StatsTemplate(
+    title = "練習試合",
+    uiState = StatsUiState(
+      players = listOf(
+        PlayerStats(1L, "田中", twoPointMade = 3, threePointMade = 1, assist = 2, rebound = 4, block = 1, steal = 1, turnover = 2),
+        PlayerStats(2L, "鈴木", twoPointMade = 2, threePointMade = 2, assist = 5, rebound = 2, block = 0, steal = 3, turnover = 1),
+        PlayerStats(3L, "佐藤", twoPointMade = 4, threePointMade = 0, assist = 1, rebound = 7, block = 2, steal = 0, turnover = 3),
+      )
+    ),
+    allPlayers = emptyList(),
+    onBack = {},
+    onClickAddPlayer = {},
+    onDismissShareOptions = {},
+    onShareImage = {},
+    onSaveImage = {},
+    onDismissPlayerSelect = {},
+    onDismissDeleteDialog = {},
+    onTogglePlayerSelection = {},
+    onConfirmSelectedPlayers = {},
+    onChangePendingNewPlayerName = {},
+    onConfirmNewPlayer = {},
+    onLongPressPlayer = {},
+    onConfirmDelete = {},
+    onPlus = { _, _ -> },
+    onMinus = { _, _ -> },
+  )
 }

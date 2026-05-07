@@ -9,6 +9,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -20,21 +21,22 @@ import com.hinataku.statscounter.data.Game
 @Composable
 internal fun GameListItem(game: Game, onClick: () -> Unit, onLongClick: () -> Unit) {
   Card(
-    modifier = Modifier
-      .fillMaxWidth()
-      .combinedClickable(
-        interactionSource = remember { MutableInteractionSource() },
-        indication = null,
-        onClick = onClick,
-        onLongClick = onLongClick,
-      ),
+    modifier = Modifier.fillMaxWidth(),
     colors = CardDefaults.cardColors(containerColor = Color.White),
     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
   ) {
     Text(
       text = game.name,
       style = MaterialTheme.typography.titleMedium,
-      modifier = Modifier.padding(16.dp),
+      modifier = Modifier
+        .fillMaxWidth()
+        .combinedClickable(
+          interactionSource = remember { MutableInteractionSource() },
+          indication = ripple(),
+          onClick = onClick,
+          onLongClick = onLongClick,
+        )
+        .padding(16.dp),
     )
   }
 }
