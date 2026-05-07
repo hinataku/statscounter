@@ -70,6 +70,7 @@ fun HomeTemplate(
   onClickExport: () -> Unit,
   onDismissExport: () -> Unit,
   onShareExportText: ((String) -> Unit)?,
+  onCopyExportText: () -> Unit,
   onClickImport: () -> Unit,
   onDismissImport: () -> Unit,
   onChangeImportText: (String) -> Unit,
@@ -243,6 +244,7 @@ fun HomeTemplate(
                 .border(1.dp, Color(0xFFD1D5DB), MaterialTheme.shapes.medium)
                 .clickable {
                   clipboardManager.setText(AnnotatedString(uiState.exportText))
+                  onCopyExportText()
                 }
                 .padding(12.dp)
                 .verticalScroll(rememberScrollState()),

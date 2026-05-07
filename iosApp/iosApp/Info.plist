@@ -37,6 +37,8 @@
 	<array>
 		<string>arm64</string>
 	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>スタッツの画像をカメラロールに保存します。</string>
 	<key>UIStatusBarHidden</key>
 	<false/>
 	<key>UISupportedInterfaceOrientations</key>
