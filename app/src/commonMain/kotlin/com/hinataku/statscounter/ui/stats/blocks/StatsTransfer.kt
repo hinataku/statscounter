@@ -1,7 +1,8 @@
-package com.hinataku.statscounter.ui.stats
+package com.hinataku.statscounter.ui.stats.blocks
 
 import com.hinataku.statscounter.data.Game
 import com.hinataku.statscounter.data.Player
+import com.hinataku.statscounter.ui.stats.StatsUiState
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

@@ -8,8 +8,8 @@ import com.hinataku.statscounter.data.PlayerRepository
 import com.hinataku.statscounter.ui.navigation.Destination
 import com.hinataku.statscounter.ui.stats.PlayerStats
 import com.hinataku.statscounter.ui.stats.StatsDestination
-import com.hinataku.statscounter.ui.stats.buildStatsTransferJson
-import com.hinataku.statscounter.ui.stats.parseStatsTransferJson
+import com.hinataku.statscounter.ui.stats.blocks.buildStatsTransferJson
+import com.hinataku.statscounter.ui.stats.blocks.parseStatsTransferJson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

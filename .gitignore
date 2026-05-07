@@ -22,3 +22,7 @@ captures/
 
 # Kotlin transformed metadata cache
 .kotlin/
+
+# Xcode user state
+*.xcuserstate
+xcuserdata/

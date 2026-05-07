@@ -1,4 +1,4 @@
-package com.hinataku.statscounter.ui.stats
+package com.hinataku.statscounter.ui.stats.blocks
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,7 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import com.hinataku.statscounter.ui.stats.PlayerStats
+import com.hinataku.statscounter.ui.stats.StatsUiState
 
 @Composable
 fun StatsShareCard(
@@ -128,7 +131,7 @@ private fun ShareValueCell(
   isName: Boolean = false,
   background: Color = Color.White,
   textColor: Color = Color(0xFF111827),
-  fontSize: androidx.compose.ui.unit.TextUnit = if (isName) 16.sp else 28.sp,
+  fontSize: TextUnit = if (isName) 16.sp else 28.sp,
 ) {
   Box(
     modifier = Modifier
@@ -153,7 +156,7 @@ private fun ShareValueCell(
 private fun ShareTotalCell(
   text: String,
   width: Dp,
-  fontSize: androidx.compose.ui.unit.TextUnit = 28.sp,
+  fontSize: TextUnit = 28.sp,
 ) {
   Box(
     modifier = Modifier

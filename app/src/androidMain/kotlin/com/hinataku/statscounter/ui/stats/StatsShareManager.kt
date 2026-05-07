@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.FileProvider
 import com.hinataku.statscounter.App
+import com.hinataku.statscounter.ui.stats.blocks.StatsShareCard
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID

@@ -5,7 +5,7 @@ composeMultiplatform = "1.8.2"
 composeBom = "2024.12.01"
 activityCompose = "1.9.3"
 lifecycle = "2.8.4"
-navigation = "2.8.0-alpha10"
+navigation = "2.9.0"
 kotlinxSerializationJson = "1.7.3"
 
 [libraries]

@@ -3,7 +3,16 @@
     "allow": [
       "Bash(git rm *)",
       "Bash(xargs ls *)",
-      "Bash(grep *)"
+      "Bash(grep *)",
+      "Bash(curl -s \"https://repo1.maven.org/maven2/org/jetbrains/androidx/navigation/navigation-compose/maven-metadata.xml\")",
+      "Bash(curl -s \"https://repo1.maven.org/maven2/org/jetbrains/androidx/navigation/navigation-compose/2.9.2/\")",
+      "Bash(curl -s \"https://dl.google.com/dl/android/maven2/org/jetbrains/androidx/navigation/navigation-compose/maven-metadata.xml\")",
+      "Bash(curl -s \"https://repo1.maven.org/maven2/org/jetbrains/androidx/navigation/navigation-compose/2.9.2/navigation-compose-2.9.2.pom\")",
+      "Bash(curl -s \"https://repo1.maven.org/maven2/org/jetbrains/androidx/navigation/navigation-compose/2.9.0/navigation-compose-2.9.0.pom\")",
+      "Bash(xargs cat *)",
+      "Bash(git -C /Users/taku/github/statsCounter status --short)",
+      "Bash(git *)",
+      "Read(//Users/taku/.claude/**)"
     ]
   }
 }

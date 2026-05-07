@@ -1,3 +1,9 @@
 package com.hinataku.statscounter.ui.navigation
 
-object PopBackDestination : Destination
+import androidx.navigation.NavController
+
+object PopBackDestination : Destination {
+  override fun navigate(navController: NavController) {
+    navController.popBackStack()
+  }
+}

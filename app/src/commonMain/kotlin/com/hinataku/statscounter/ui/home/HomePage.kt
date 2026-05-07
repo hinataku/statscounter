@@ -9,14 +9,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.hinataku.statscounter.platform.rememberShareActions
 import com.hinataku.statscounter.ui.navigation.LocalNavController
-import com.hinataku.statscounter.ui.navigation.navigateTo
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomePage(
-  viewModel: HomeViewModel = viewModel(),
+  viewModel: HomeViewModel = viewModel(factory = viewModelFactory { initializer { HomeViewModel() } }),
 ) {
   val snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
@@ -26,9 +27,10 @@ fun HomePage(
   val navigationTo by viewModel.navigationTo.collectAsStateWithLifecycle()
 
   LaunchedEffect(navigationTo) {
-    val destination = navigationTo ?: return@LaunchedEffect
-    navController.navigateTo(destination)
-    viewModel.completeNavigation()
+    navigationTo?.let {
+      it.navigate(navController)
+      viewModel.completeNavigation()
+    }
   }
 
   HomeTemplate(

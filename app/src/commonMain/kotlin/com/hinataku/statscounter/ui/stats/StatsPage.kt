@@ -15,7 +15,6 @@ import com.hinataku.statscounter.data.GameRepository
 import com.hinataku.statscounter.data.PlayerRepository
 import com.hinataku.statscounter.platform.rememberShareActions
 import com.hinataku.statscounter.ui.navigation.LocalNavController
-import com.hinataku.statscounter.ui.navigation.navigateTo
 import kotlinx.coroutines.launch
 
 @Composable
@@ -36,9 +35,10 @@ fun StatsPage(
   val navigationTo by viewModel.navigationTo.collectAsStateWithLifecycle()
 
   LaunchedEffect(navigationTo) {
-    val destination = navigationTo ?: return@LaunchedEffect
-    navController.navigateTo(destination)
-    viewModel.completeNavigation()
+    navigationTo?.let {
+      it.navigate(navController)
+      viewModel.completeNavigation()
+    }
   }
 
   StatsTemplate(
